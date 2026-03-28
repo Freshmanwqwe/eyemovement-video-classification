@@ -39,11 +39,15 @@ class VideoResnet(nn.Module):
         
     def forward(self, x):
         bs, clips, T, C, H, W = x.shape
+        # x = [bs * clips, T, C, H, W]
+        x = x.view(bs * clips, T, C, H, W)
         # x = [bs * clips, C, T, H, W]
-        x = x.view(bs * clips, C, T, H, W)
+        x = x.transpose(1, 2)
         
         x = self.layer_1(x)
+        print(f"after layer1: {x.shape}")
         x = self.layer_2(x)
+        print(f"after layer2: {x.shape}")
         x = self.layer_3(x)
         x = self.layer_4(x)
         x = self.layer_5(x)
@@ -57,8 +61,8 @@ class VideoResnet(nn.Module):
     
 if __name__ == "__main__":
     model = VideoResnet(1, 128)
-    x = torch.randn(4, 20, 10, 1, 20, 20)
-    y = model(x)
+    x = torch.randn(1, 1, 1, 1, 200, 200)
     print(f"x:{ x.shape }")
+    y = model(x)
     print(f"y:{ y.shape }")
     

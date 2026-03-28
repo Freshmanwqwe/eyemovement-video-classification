@@ -107,7 +107,7 @@ def validate_epoch(model, dataloader, criterion):
             running_loss += loss.item()
             preds = torch.argmax(outputs, dim=1)
             all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
             
             acc = accuracy_score(all_labels, all_preds)
             pbar.set_postfix({ 'loss': loss.item(), 'acc': acc })
