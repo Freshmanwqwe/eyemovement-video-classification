@@ -16,15 +16,18 @@ class Config:
     # 滑动窗口大小
     CLIP_FRAMES = 60
     # 滑动窗口步数
-    CLIP_STRIDE = 30
+    CLIP_STRIDE = 45
     # 视频取3通道
-    USE_RGB = True
+    USE_RGB = False
     # USE_RGB为True时IN_CHANNEL应为3，否则为1
-    IN_CHANNEL = 3
+    IN_CHANNEL = 1
     # 二分类输出通道为2
     OUT_CHANNEL = 2
     # 数据分辨率
     INPUT_FRAME_SIZE = (200, 200)
+    # 提供训练只取NUM_SAMPLES个连续的clips
+    RAND_SAMPLE_ENABLE = False
+    NUM_SAMPLES = 2
     
     # 数据集相关
     ROOT_DIR = r"D:\_work\Programming\Datasets\eyemovement\PG-Videos"
@@ -39,18 +42,36 @@ class Config:
     DEVICE = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     # DEVICE = 'cpu'
     # dataLoader
-    BATCH_SIZE = 1
+    BATCH_SIZE = 2
     NUM_WORKERS = 0
     # 学习率
-    LR = 1e-4
+    LR = 1e-5
     # epoch
     EPOCHS = 100
     # 余弦退火调度器
     MAX_T = 100
-    MIN_LR = 1e-5
+    MIN_LR = 1e-6
     # 定期保存
     SAVE_EPOCHS = 10
 
     # 保存路径
     OUTPUT_PATH = r"D:\_work\Microsoft\_work\GraduationProject\src\current\output"
+    
+    
+class TimesNetConfig:
+    task_name = 'classification'
+    seq_len = Config.CLIP_FRAMES
+    label_len = 0
+    pred_len = 0
+    enc_in = 128
+    d_model = 64
+    d_ff = 128
+    e_layers = 2
+    top_k = 2
+    num_kernels = 3
+    embed = 'fixed'
+    freq = 'h'
+    dropout = 0.1
+    c_out = 128
+    num_class = 128
     

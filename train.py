@@ -144,7 +144,7 @@ def start_train():
     # 损失函数
     criterion = nn.CrossEntropyLoss()
     # 优化器
-    optimizer = optim.Adam(model.parameters(), lr=Config.LR)
+    optimizer = optim.Adam(model.parameters(), lr=Config.LR, weight_decay=1e-4)
     # 调度器
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, Config.MAX_T, Config.MIN_LR)
     # 混合精度
@@ -241,5 +241,5 @@ def test_model():
     
     
 if __name__ == "__main__":
-    # start_train()
-    test_model()
+    start_train()
+    # test_model()

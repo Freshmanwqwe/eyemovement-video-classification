@@ -7,6 +7,7 @@ import random
 
 from torchvision.transforms import v2
 from torch.utils.data import Dataset
+from decord import VideoReader
 from config import Config
 
 class EyeDataset(Dataset):
@@ -94,7 +95,7 @@ class EyeDataset(Dataset):
                     video_cap.release()
                 return clips
         return clips
-
+                
     def _clip_video(self, video_cap, selected_experiment):
         # 取前FRAMES_KEEP个帧
         # [T, C, H, W]
@@ -128,15 +129,11 @@ class EyeDataset(Dataset):
             clips.append(frames_tensor)
             
         clips = torch.stack(clips)
+        clips_size = clips.shape[0]
         
-        if Config.RAND_SAMPLE_ENABLE:
-            clips_size = clips.shape[0]
-            
-            if clips_size <= Config.NUM_SAMPLES:
-                return clips
-            
-            start_idx = random.randint(0, clips_size - Config.NUM_SAMPLES)
-            
-            return clips[start_idx : start_idx + Config.NUM_SAMPLES]
+        if clips_size <= Config.NUM_SAMPLES:
+            return clips
         
-        return clips
+        start_idx = random.randint(0, clips_size - Config.NUM_SAMPLES)
+        
+        return clips[start_idx : start_idx + Config.NUM_SAMPLES]

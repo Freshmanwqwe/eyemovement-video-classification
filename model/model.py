@@ -1,13 +1,14 @@
 import torch
 import torch.nn as nn
 from model.res_model import VideoResnet
+from model.timesnet3D import TimesNet3D
 
 
 class CrossAttentionFusion(nn.Module):
-    def __init__(self, embed_dim=256, num_heads=4):
+    def __init__(self, embed_dim=256, num_heads=4, dropout=0.1):
         super(CrossAttentionFusion, self).__init__()
         self.query_toke = nn.Parameter(torch.randn(1, 1, embed_dim))
-        self.cross_attn = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)
+        self.cross_attn = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout, batch_first=True)
         self.norm = nn.LayerNorm(embed_dim)
         
     def forward(self, x):
@@ -19,13 +20,14 @@ class CrossAttentionFusion(nn.Module):
 
 # x = [BATCH, EXP=6, 256], EXP为6，代表6个实验，进入6个输入头
 class EyeModel(nn.Module):
-    def __init__(self, in_ch, out_ch, filters=[256]):
+    def __init__(self, in_ch, out_ch, filters=[256], dropout=0.1):
         super(EyeModel, self).__init__()
         self.exp_models = nn.ModuleList([
             ExpModel(in_ch, filters[0]) for _ in range(6)
         ])
         self.cross_attn = CrossAttentionFusion()
         self.fc = nn.Linear(filters[0], out_ch)
+        self.dropout = nn.Dropout(p=dropout)
         
         
     def forward(self, x_list):
@@ -40,6 +42,9 @@ class EyeModel(nn.Module):
         x = x.transpose(0, 1)
         # x = [BATCH, 256]
         x = self.cross_attn(x)
+        
+        x = self.dropout(x)
+        
         # x = [BATCH, 2]
         x = self.fc(x)
         
@@ -47,10 +52,10 @@ class EyeModel(nn.Module):
     
     
 class SelfAttention(nn.Module):
-    def __init__(self, embed_dim=128, num_heads=8, max_len=100):
+    def __init__(self, embed_dim=128, num_heads=8, max_len=100, dropout=0.1):
         super(SelfAttention, self).__init__()
         self.pos_embed = nn.Parameter(torch.randn(1, max_len, embed_dim))
-        self.mha = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)
+        self.mha = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout, batch_first=True)
         self.norm = nn.LayerNorm(embed_dim)
     
     def forward(self, x):
@@ -62,11 +67,15 @@ class SelfAttention(nn.Module):
         return x
         
         
+# x = [BATCH, CLIP, T, C, H, W]
 # x = [BATCH, CLIP, 128]
+# x = [BATCH, CLIP, 256]
+# x = [BATCH, 256]
 class ExpModel(nn.Module):
-    def __init__(self, in_ch, out_ch, filters=[128]):
+    def __init__(self, in_ch, out_ch, filters=[128], dropout=0.1):
         super(ExpModel, self).__init__()
         self.encoder = VideoResnet(in_ch, filters[0])
+        # self.encoder = TimesNet3D(in_ch, filters[0])
         self.self_attn = SelfAttention()
         self.layer = nn.Sequential(
             nn.Conv1d(filters[0], out_ch, kernel_size=3, stride=1, padding=1),
@@ -74,12 +83,13 @@ class ExpModel(nn.Module):
             nn.ReLU(),
         )
         self.pool = nn.AdaptiveAvgPool1d(1)
+        self.dropout = nn.Dropout(p=dropout)
         
     def forward(self, x):
         x = self.encoder(x)
-        print(f"encoder:{ x.shape }")
         x = self.self_attn(x)
         x = x.transpose(1, 2)
+        x = self.dropout(x)
         x = self.layer(x)
         x = self.pool(x)
         x = x.squeeze(-1)
@@ -89,7 +99,7 @@ class ExpModel(nn.Module):
 
 if __name__ == "__main__":
     model = EyeModel(1, 2).to('cuda')
-    x = [torch.randn(4, 20, 10, 1, 20, 20).to('cuda') for _ in range(6)]
+    x = [torch.randn(4, 20, 60, 1, 20, 20).to('cuda') for _ in range(6)]
     # print(f"x:{ x.shape }")
     y = model(x)
     print(f"y:{ y.shape }")
