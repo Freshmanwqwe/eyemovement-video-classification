@@ -210,7 +210,7 @@ def start_train():
         print(f"confusion_mat:\n{conf_mat}")
         print(f"current_lr: {current_lr:.6f}")
         
-    with open(Path(Config.OUTPUT_PATH / 'training_history.json'), 'w') as f:
+    with open(Path(Config.OUTPUT_PATH) / 'training_history.json', 'w') as f:
         json.dump(history, f, indent=4)
         
     print(f"\nFinish Training!")

@@ -45,12 +45,12 @@ class Config:
     BATCH_SIZE = 2
     NUM_WORKERS = 0
     # 学习率
-    LR = 1e-5
+    LR = 1e-4
     # epoch
     EPOCHS = 100
     # 余弦退火调度器
     MAX_T = 100
-    MIN_LR = 1e-6
+    MIN_LR = 1e-5
     # 定期保存
     SAVE_EPOCHS = 10
 

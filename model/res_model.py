@@ -68,7 +68,6 @@ class VideoResnet(nn.Module):
         output = torch.stack(res, dim=0)
         # [bs, clips, 128]
         x = output.transpose(0, 1)
-        
         x = x.view(bs, clips, -1)
         
         x = self.dropout(x)
@@ -121,6 +120,6 @@ def test_shape():
 
     
 if __name__ == "__main__":
-    # test_shape()
-    test_model()
+    test_shape()
+    # test_model()
     

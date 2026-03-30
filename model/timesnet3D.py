@@ -1,7 +1,9 @@
 import torch
+import torch.utils.checkpoint as checkpoint
 from torch import nn
 from model.seriesLib.models.TimesNet import Model
 from config import TimesNetConfig
+
 
 # x = [BATCH, CLIP, T, C, H, W]
 class TimesNet3D(nn.Module):
@@ -51,7 +53,7 @@ class ResidualBlock2D(nn.Module):
 
 # x = [BATCH, CLIP, T, C, H, W]
 class Resnet2D(nn.Module):
-    def __init__(self, in_ch, out_ch, filters=[64, 128, 256, 512]):
+    def __init__(self, in_ch, out_ch, filters=[16, 32, 64, 128]):
         super(Resnet2D, self).__init__()
         self.layer_1 = ResidualBlock2D(in_ch, filters[0], stride=1)
         self.layer_2 = ResidualBlock2D(filters[0], filters[1], stride=2)
@@ -62,6 +64,35 @@ class Resnet2D(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         
     def forward(self, x):
+        bs, clips, T, C, H, W = x.shape
+        # x = [clips, bs, T, C, H, W]
+        x = x.transpose(0, 1).contiguous()
+        
+        def run_features(inputs):
+            out = self.layer_1(inputs)
+            out = self.layer_2(out)
+            out = self.layer_3(out)
+            out = self.layer_4(out)
+            out = self.layer_5(out)
+            out = self.avgpool(out)
+            return out
+        
+        res = []
+        for tmpx in x:
+            # tmpx = [bs, T, C, H, W]
+            tmpx = tmpx.view(bs * T, C, H, W)
+            tmpx = checkpoint.checkpoint(run_features, tmpx, use_reentrant=False)
+            tmpx = tmpx.view(bs, T, -1)
+            res.append(tmpx)
+        
+        # [clips, bs, T, 128]
+        x = torch.stack(res, dim=0)
+        # [bs, clips, T, 128]
+        x = x.transpose(0, 1).contiguous()
+        
+        return x
+        
+    def _forward(self, x):
         bs, clips, T, C, H, W = x.shape
         # x = [bs * clips * T, C, H, W]
         x = x.view(bs * clips * T, C, H, W)
