@@ -21,8 +21,8 @@ class Config:
     USE_RGB = False
     # USE_RGB为True时IN_CHANNEL应为3，否则为1
     IN_CHANNEL = 1
-    # 二分类输出通道为2
-    OUT_CHANNEL = 2
+    # 回归输出通道为1
+    OUT_CHANNEL = 1
     # 数据分辨率
     INPUT_FRAME_SIZE = (400, 200)
     # 提供训练只取NUM_SAMPLES个连续的clips
@@ -53,7 +53,7 @@ class Config:
     # epoch
     EPOCHS = 100
     # 余弦退火调度器
-    MAX_T = 100
+    MAX_T = 50
     MIN_LR = 1e-5
     # 定期保存
     SAVE_EPOCHS = 10

@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-from dataset import EyeDataset
+from dataset_regression import EyeDataset
 from torch.utils.data import DataLoader
-from model.model import EyeModel
-from config import Config
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
+from model_regression.model import EyeModel
+from config_regression import Config
+
 
 def do_test():
     dataset = EyeDataset(
@@ -20,15 +20,13 @@ def do_test():
     )
     model = EyeModel(Config.IN_CHANNEL, Config.OUT_CHANNEL).to(Config.DEVICE)
     
-    checkpoint_path = "output/checkpoints/best_model.pt"  
+    checkpoint_path = "output/checkpoints/best_model.pt"
     checkpoint = torch.load(checkpoint_path, map_location=Config.DEVICE)
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
 
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.MSELoss()
     running_loss = 0.0
-    all_preds = []
-    all_labels = []
     pbar = tqdm(dataloader, desc="Testing...")
     
     with torch.no_grad():
@@ -41,22 +39,12 @@ def do_test():
             running_loss += loss_tmp.item()
             preds = torch.argmax(outputs, dim=1)
             
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
-            
-            acc = accuracy_score(all_labels, all_preds)
-            pbar.set_postfix({ 'loss': loss_tmp.item(), 'acc': acc })
+            pbar.set_postfix({ 'loss': loss_tmp.item() })
     
     avg_loss = running_loss / len(dataloader)
-    
-    precision, recall, f1, _ = precision_recall_fscore_support(
-        y_true=all_labels, y_pred=all_preds, average='binary'
-    )
-    conf_mat = confusion_matrix(all_labels, all_preds)
+
     print("SUMMARY:")
-    print(f"Loss: {avg_loss:.4f}, Acc: {acc:.4f}")
-    print(f"precision: {precision:.4f}, recall: {recall:.4f}, F1: {f1:.4f}")
-    print(f"confusion_mat:\n{conf_mat}")
+    print(f"Loss: {avg_loss:.4f}")
         
 
 if __name__=="__main__":
