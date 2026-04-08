@@ -1,4 +1,4 @@
 /.vscode
-output*
+*output*
 /deserted
 __pycache__/
