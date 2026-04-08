@@ -35,7 +35,7 @@ class Config:
     
     # 数据集相关
     ROOT_DIR = r"D:\_work\Programming\Datasets\eyemovement\PG-Videos"
-    SELECT_FOLDER_PATH = r"D:\_work\Microsoft\_work\GraduationProject\src\selected_folder.json"
+    SELECT_FOLDER_PATH = r"D:\_work\Microsoft\_work\GraduationProject\src\TRAINING\selected_folder.json"
     # 训练集、验证集、测试集比例
     RATIO = {
         'train': 0.7,
@@ -59,7 +59,7 @@ class Config:
     SAVE_EPOCHS = 10
 
     # 保存路径
-    OUTPUT_PATH = r"D:\_work\Microsoft\_work\GraduationProject\src\current\output"
+    OUTPUT_PATH = r"output"
     
     
 class TimesNetConfig:

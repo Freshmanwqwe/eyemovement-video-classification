@@ -124,6 +124,7 @@ def validate_epoch(model, dataloader, criterion):
     
 
 def start_train():
+    (Path(Config.OUTPUT_PATH) / 'checkpoints').mkdir(parents=True, exist_ok=True)
     # 历史数据记录
     history = {
         'train_loss': [],

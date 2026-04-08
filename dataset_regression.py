@@ -58,7 +58,7 @@ class EyeDataset(Dataset):
             else:
                 raise Exception(f'{patient_num} miss the {experiment} experiment')
                     
-        return data, torch.tensor(label, dtype=torch.long)
+        return data, torch.tensor(label, dtype=torch.float32)
     
     def __len__(self):
         return len(self.labels)
@@ -77,10 +77,11 @@ class EyeDataset(Dataset):
                 continue
             with open(label_path, 'r') as file:
                 label_json = json.load(file)
-                if (label_json['MMSE'] == '/'):
+                if (label_json['MOCA'] == '/'):
                     continue
                 
-            labels.append(float(label_json['MMSE']))
+            # 标签直接使用原始的 [0, 30] 之间的分数，不做归一化
+            labels.append(float(label_json['MOCA']))
             patient_nums.append(patient_num)
         return patient_nums, labels
     
@@ -172,12 +173,15 @@ class EyeDataset(Dataset):
         # 取前FRAMES_KEEP个帧
         # [T, C, H, W]
         frames = []
-        for _ in range(Config.FRAMES_KEEP[selected_experiment]):
+        for idx in range(Config.FRAMES_KEEP[selected_experiment]):
             # [C, H, W]
             ret, frame = video_cap.read()
             
             if not ret:
                 raise Exception(f'Video frames less than {Config.FRAMES_KEEP[selected_experiment]}')
+            
+            if idx % Config.FRAME_STEP != 0:
+                continue
             
             if Config.USE_RGB:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0

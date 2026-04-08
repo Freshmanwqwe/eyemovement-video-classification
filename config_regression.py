@@ -53,13 +53,13 @@ class Config:
     # epoch
     EPOCHS = 100
     # 余弦退火调度器
-    MAX_T = 50
+    MAX_T = 100
     MIN_LR = 1e-5
     # 定期保存
     SAVE_EPOCHS = 10
 
     # 保存路径
-    OUTPUT_PATH = r"D:\_work\Microsoft\_work\GraduationProject\src\current\output"
+    OUTPUT_PATH = r"D:\_work\Microsoft\_work\GraduationProject\src\current\output_regression"
     
     
 class TimesNetConfig:

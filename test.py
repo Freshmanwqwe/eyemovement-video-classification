@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-from dataset import EyeDataset
+from _output.output1.dataset import EyeDataset
 from torch.utils.data import DataLoader
 from model.model import EyeModel
-from config import Config
+from _output.output1.config import Config
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
 
 def do_test():
@@ -20,7 +20,7 @@ def do_test():
     )
     model = EyeModel(Config.IN_CHANNEL, Config.OUT_CHANNEL).to(Config.DEVICE)
     
-    checkpoint_path = "output/checkpoints/best_model.pt"  
+    checkpoint_path = "_output/output1/checkpoints/best_model2.pt"  
     checkpoint = torch.load(checkpoint_path, map_location=Config.DEVICE)
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
@@ -57,7 +57,7 @@ def do_test():
     print(f"Loss: {avg_loss:.4f}, Acc: {acc:.4f}")
     print(f"precision: {precision:.4f}, recall: {recall:.4f}, F1: {f1:.4f}")
     print(f"confusion_mat:\n{conf_mat}")
-        
+
 
 if __name__=="__main__":
     do_test()

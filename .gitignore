@@ -1,5 +1,4 @@
 /.vscode
-/output
-/_output
+output*
 /deserted
 __pycache__/

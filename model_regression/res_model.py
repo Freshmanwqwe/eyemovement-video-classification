@@ -31,7 +31,7 @@ class ResidualBlock3D(nn.Module):
         
 # x = [BATCH, CLIP, T, C, H, W]
 class VideoResnet(nn.Module):
-    def __init__(self, in_ch, out_ch, filters=[16, 32, 64, 128], dropout=0.2):
+    def __init__(self, in_ch, out_ch, filters=[32, 64, 128, 256], dropout=0.2):
         super(VideoResnet, self).__init__()
         self.layer_1 = ResidualBlock3D(in_ch, filters[0], stride=1)
         self.layer_2 = ResidualBlock3D(filters[0], filters[1], stride=2)

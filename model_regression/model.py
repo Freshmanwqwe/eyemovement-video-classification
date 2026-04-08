@@ -9,7 +9,14 @@ class CrossAttentionFusion(nn.Module):
         
         self.query_token = nn.Parameter(torch.randn(1, 1, embed_dim) * 0.02)
         self.exp_embed = nn.Parameter(torch.randn(1, num_exp, embed_dim) * 0.02)
-        self.cross_attn = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout, batch_first=True)
+        
+        nn.init.trunc_normal_(self.query_token, std=0.02)
+        nn.init.trunc_normal_(self.exp_embed, std=0.02)
+
+        self.cross_attn1 = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout, batch_first=True)
+        self.cross_attn2 = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout, batch_first=True)
+        self.cross_attn3 = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout, batch_first=True)
+        self.cross_attn4 = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout, batch_first=True)
         self.norm1 = nn.LayerNorm(embed_dim)
         self.attn_dropout = nn.Dropout(dropout)
         
@@ -30,8 +37,14 @@ class CrossAttentionFusion(nn.Module):
         q = self.query_token.expand(batch_size, -1, -1)
         
         # Attention
-        attn_output, _ = self.cross_attn(query=q, key=x, value=x)
-        x_fusion = self.norm1(q + self.attn_dropout(attn_output))
+        q1, _ = self.cross_attn1(query=q, key=x, value=x)
+        q = self.norm1(q + self.attn_dropout(q1))
+        q1, _ = self.cross_attn2(query=q, key=x, value=x)
+        q = self.norm1(q + self.attn_dropout(q1))
+        q1, _ = self.cross_attn3(query=q, key=x, value=x)
+        q = self.norm1(q + self.attn_dropout(q1))
+        q1, _ = self.cross_attn4(query=q, key=x, value=x)
+        x_fusion = self.norm1(q + self.attn_dropout(q1))
         
         # FFN
         ffn_output = self.ffn(x_fusion)
@@ -69,9 +82,6 @@ class EyeModel(nn.Module):
         
         # x = [BATCH, 1]
         x = self.fc(x)
-        
-        # sigmoid约束
-        x = 30.0 * torch.sigmoid(x)
         
         return x
     
