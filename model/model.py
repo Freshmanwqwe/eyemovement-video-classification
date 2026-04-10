@@ -73,6 +73,19 @@ class EyeModel(nn.Module):
         return x
     
 
+class OneExpModel(nn.Module):
+    def __init__(self, in_ch, out_ch, filters=[256], dropout=0.1):
+        super(OneExpModel, self).__init__()
+        self.layer = nn.Sequential(
+            ExpModel(in_ch, filters[0]),
+            nn.Dropout(dropout),
+            nn.Linear(filters[0], out_ch)
+        )
+        
+    def forward(self, x):
+        return self.layer(x)
+    
+
 if __name__ == "__main__":
     model = EyeModel(1, 2).to('cuda')
     x = [torch.randn(4, 20, 60, 1, 20, 20).to('cuda') for _ in range(6)]
